@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>SentinelTrend</title>
+    <link rel="stylesheet" href="styles/hud.css?v=s18-20260508">
+</head>
+<body>
+    <div class="hud-layout">
+        <aside class="hud-sidebar">
+            <div class="hud-logo">
+                <span class="hud-logo-icon">&#9670;</span>
+                <span class="hud-logo-text">SentinelTrend</span>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">STATUS</div>
+                <div class="hud-status-row">
+                    <span class="hud-health-dot" id="st-health-dot"></span>
+                    <span class="hud-value hud-value--cyan" id="st-status" style="white-space: pre-wrap; color: red;">INITIALIZING</span>
+                    <script>
+                        window.onerror = function(msg, url, lineNo, columnNo, error) {
+                            var statusEl = document.getElementById('st-status');
+                            if (statusEl) {
+                                statusEl.textContent = 'JS ERROR: ' + msg + '\n' + (error ? error.stack : '');
+                            }
+                            return false;
+                        };
+                        window.addEventListener('unhandledrejection', function(event) {
+                            var statusEl = document.getElementById('st-status');
+                            if (statusEl) {
+                                statusEl.textContent = 'PROMISE REJECTION: ' + (event.reason ? event.reason.stack || event.reason : 'Unknown');
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">SYMBOL</div>
+                <div class="hud-value hud-value--large" id="st-symbol">---</div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">MODE</div>
+                <button class="st-sidebar-mode-btn" id="st-mode" title="Click to toggle AUTO/MANUAL (M)">MANUAL</button>
+            </div>
+            <div class="hud-sidebar-section st-meridian" title="MERIDIAN A+B on SPY/QQQ — decisions every 30 min on the 1-min chart (10:00, 10:30, …), overnight carry at the close">
+                <div class="hud-label">MERIDIAN <span class="st-meridian-mode" id="st-meridian-mode">SHADOW</span></div>
+                <div class="hud-value st-meridian-status" id="st-meridian-status">waiting for history…</div>
+                <div class="st-meridian-last" id="st-meridian-last">no intent yet today</div>
+                <div class="st-meridian-errors st-hidden" id="st-meridian-errors"></div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">POSITIONS</div>
+                <div class="hud-value" id="st-sidebar-pos-count">0 / 5</div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">PAPER / LIVE</div>
+                <div class="hud-value hud-value--gold" id="st-paper-mode">---</div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">RISK</div>
+                <div class="hud-value" id="st-breaker">---</div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">STREAM</div>
+                <div class="hud-status-row">
+                    <span class="hud-health-dot" id="st-stream-dot"></span>
+                    <span class="hud-value hud-value--mono" id="st-stream-status">OFFLINE</span>
+                </div>
+                <div class="hud-value hud-value--mono" id="st-stream-price">---</div>
+            </div>
+            <div class="hud-sidebar-section" hidden>
+                <div class="hud-label">SENTINEL</div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Phase</span>
+                    <span class="hud-value hud-value--mono st-fsm-phase st-fsm--idle" id="st-sentinel-phase">Idle</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Score</span>
+                    <span class="hud-value hud-value--mono" id="st-sentinel-score">---</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Dir</span>
+                    <span class="hud-value hud-value--mono" id="st-sentinel-dir">---</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Str</span>
+                    <span class="hud-value hud-value--mono" id="st-sentinel-strength">---</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Status</span>
+                    <span class="hud-value hud-value--mono" id="st-sentinel-status">WAITING</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Evals</span>
+                    <span class="hud-value hud-value--mono" id="st-sentinel-evals">0</span>
+                </div>
+            </div>
+            <div class="hud-sidebar-section st-wallet">
+                <div class="hud-label">PORTFOLIO</div>
+                <div class="st-wallet-equity" id="st-wallet-equity">$0.00</div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">P/L</span>
+                    <span class="st-wallet-pnl" id="st-wallet-pnl">$0.00</span>
+                </div>
+                <div class="st-wallet-dd-bar">
+                    <div class="st-wallet-dd-fill" id="st-wallet-dd-fill"></div>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">DD%</span>
+                    <span class="hud-value hud-value--mono" id="st-acct-dd">0.0%</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">Cash</span>
+                    <span class="hud-value hud-value--mono" id="st-wallet-cash">---</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline">BP</span>
+                    <span class="hud-value hud-value--mono" id="st-wallet-bp">---</span>
+                </div>
+                <div class="hud-status-row">
+                    <span class="hud-label-inline" title="Day trades in rolling 5-day window (PDT counter)">DT</span>
+                    <span class="hud-value hud-value--mono" id="st-day-trades">--</span>
+                </div>
+                <div class="hud-status-row st-pdt-warn-row" id="st-pdt-warning" hidden>
+                    <span class="hud-value hud-value--gold" title="Account under $25k with day trades — next day trade may trip PDT (90-day restriction)">PDT WARN</span>
+                </div>
+            </div>
+            <div class="hud-sidebar-section" hidden>
+                <div class="hud-label">APEX RADAR</div>
+                <div class="st-apex-radar" id="st-apex-radar" title="APEX entry sweep across the whole watchlist (1m + 5m)">---</div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">WATCHLIST</div>
+                <div class="st-sidebar-watchlist" id="st-sidebar-watchlist"></div>
+            </div>
+            <div class="hud-sidebar-section">
+                <div class="hud-label">UPTIME</div>
+                <div class="hud-value hud-value--mono" id="st-uptime">---</div>
+            </div>
+        </aside>
+
+        <main class="hud-main">
+            <div class="hud-toolbar">
+                <div class="st-header-info">
+                    <span class="st-header-symbol" id="st-header-symbol">---</span>
+                    <span class="st-header-price" id="st-header-price">---</span>
+                    <span class="st-header-change" id="st-header-change"></span>
+                    <span class="st-tradeability" id="st-tradeability" title="Manual-trading conditions for the active symbol">---</span>
+                    <span class="st-ny-clock" id="st-ny-clock">NY --:--:-- ---</span>
+                </div>
+                <div class="st-tf-group">
+                    <button class="st-tf-btn" data-tf="1m">1m</button>
+                    <button class="st-tf-btn st-tf-btn--active" data-tf="5m">5m</button>
+                    <button class="st-tf-btn" data-tf="10m">10m</button>
+                    <button class="st-tf-btn" data-tf="15m">15m</button>
+                    <button class="st-tf-btn" data-tf="30m">30m</button>
+                    <button class="st-tf-btn" data-tf="1h">1h</button>
+                    <button class="st-tf-btn" data-tf="4h">4h</button>
+                    <button class="st-tf-btn" data-tf="1D">1D</button>
+                    <span class="st-tf-separator"></span>
+                    <button class="st-tf-btn st-tf-btn--active" id="st-markers-toggle" title="Toggle markers">MK</button>
+                    <span class="st-tf-separator"></span>
+                    <button class="st-tf-btn" id="st-ema-toggle" title="EMA 9 + 20">EMA</button>
+                    <button class="st-tf-btn" id="st-ema50-toggle" title="EMA 50">50</button>
+                    <button class="st-tf-btn" id="st-ema200-toggle" title="EMA 200">200</button>
+                    <button class="st-tf-btn" id="st-vwap-toggle" title="VWAP">VWAP</button>
+                    <button class="st-tf-btn" id="st-bb-toggle" title="Bollinger Bands (20, 2.0)">BB</button>
+                    <button class="st-tf-btn" id="st-osc-toggle" title="Oscillator pane">OSC</button>
+                </div>
+            </div>
+            <div class="st-bt-bar">
+                <div class="st-bt-panel" id="st-bt-panel">
+                    <select class="st-bt-select" id="st-bt-tf">
+                        <option value="1m">1m</option>
+                        <option value="5m" selected>5m</option>
+                        <option value="15m">15m</option>
+                        <option value="30m">30m</option>
+                        <option value="1h">1h</option>
+                        <option value="4h">4h</option>
+                        <option value="1D">1D</option>
+                    </select>
+                    <button class="st-bt-btn" id="st-bt-run">BT</button>
+                    <button class="st-bt-btn" id="st-bt-run-all">ALL</button>
+                    <button class="st-bt-btn" id="st-bt-clear">CLR</button>
+                </div>
+                <div class="st-bt-stats" id="st-bt-stats" style="display:none;"></div>
+            </div>
+            <div class="hud-scroll-area">
+            <div class="hud-chart-area" id="st-chart">
+                <div id="st-chart-main" class="st-chart-pane">
+                    <div id="st-bar-countdown" class="st-bar-countdown">--:--</div>
+                </div>
+                <div id="st-chart-divider" class="st-chart-divider"></div>
+                <div id="st-chart-vol" class="st-chart-pane st-chart-vol"></div>
+                <div id="st-chart-osc-divider" class="st-chart-divider"></div>
+                <div id="st-chart-osc-tabs" class="st-osc-tabs">
+                    <button class="st-osc-tab st-osc-tab--active" data-osc="macd">MACD</button>
+                    <button class="st-osc-tab" data-osc="rsi">RSI</button>
+                    <button class="st-osc-tab" data-osc="adx">ADX</button>
+                    <button class="st-osc-tab" data-osc="stochrsi">StochRSI</button>
+                </div>
+                <div id="st-chart-osc" class="st-chart-pane st-chart-osc"></div>
+                <div id="st-chart-loading" class="st-chart-loading">
+                    <div class="st-chart-loading-pulse"></div>
+                    <span>Loading data...</span>
+                </div>
+                <div id="st-trade-plan" class="st-trade-plan st-trade-plan--hidden" hidden></div>
+            </div>
+            <div class="hud-panels-area" id="st-panels">
+                <div class="st-tab-bar">
+                    <button class="st-tab-btn" data-tab="positions">POSITIONS</button>
+                    <button class="st-tab-btn st-tab-btn--legacy" data-tab="engine" hidden>ST ENGINE</button>
+                    <button class="st-tab-btn" data-tab="discovery">DISCOVERY</button>
+                    <button class="st-tab-btn" data-tab="journal">JOURNAL</button>
+                    <button class="st-tab-btn st-tab-btn--legacy" data-tab="tournament" hidden title="D Evolution Protocol — strategy leaderboard">TOURNAMENT</button>
+                    <button class="st-tab-btn st-tab-btn--legacy" data-tab="dplus" hidden title="D-PLUS (Sesiunea 2) — adaptive risk + memory db + lead-lag + evolver">D-PLUS</button>
+                    <button class="st-tab-btn st-tab-btn--legacy" data-tab="omega" hidden title="OMEGA (Sesiunea 3) — predictive ML stack">OMEGA</button>
+                    <button class="st-tab-btn st-tab-btn--legacy" data-tab="prime" hidden title="PRIME — conviction engine: decisions, vetoes, shadow trades">PRIME</button>
+                    <button class="st-tab-btn st-tab-btn--meridian st-tab-btn--active" data-tab="meridian" title="MERIDIAN — A (intraday noise-band momentum) + B (overnight carry) on SPY/QQQ">MERIDIAN</button>
+                    <button class="st-tab-btn st-tab-btn--legacy" data-tab="lab" hidden title="Strategy Lab — multi-strategy parallel backtest engine">LAB</button>
+                    <button class="st-tab-btn" data-tab="config">CONFIG</button>
+                </div>
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-positions">
+                    <div class="st-pos-subtabs">
+                        <button class="st-pos-subtab st-pos-subtab--active" data-subtab="open">OPEN</button>
+                        <button class="st-pos-subtab" data-subtab="orders">ORDERS</button>
+                    </div>
+                    <div class="st-pos-panel" id="st-pos-panel-open">
+                        <div class="st-pos-header">
+                            <div class="st-pos-metrics">
+                                <button class="st-mode-toggle" id="st-mode-toggle" title="Toggle AUTO/MANUAL (M)">
+                                    <span id="st-mode-label">MANUAL</span>
+                                </button>
+                                <span class="st-pos-metric">
+                                    <span class="hud-label-inline">PnL</span>
+                                    <span class="hud-value hud-value--mono" id="st-pos-pnl-today">$0.00</span>
+                                </span>
+                                <span class="st-pos-metric">
+                                    <span class="hud-label-inline">Closed</span>
+                                    <span class="hud-value hud-value--mono" id="st-pos-trades-today">0</span>
+                                </span>
+                                <span class="st-pos-metric">
+                                    <span class="hud-label-inline">DD%</span>
+                                    <span class="hud-value hud-value--mono" id="st-pos-dd">0.0%</span>
+                                </span>
+                            </div>
+                            <button class="st-liquidate-btn" id="st-liquidate-btn" title="Liquidate ALL (Esc)">LIQUIDATE ALL</button>
+                        </div>
+                        <table class="st-positions-table">
+                            <thead>
+                                <tr>
+                                    <th>SYMBOL</th>
+                                    <th>SIDE</th>
+                                    <th>QTY</th>
+                                    <th>ENTRY</th>
+                                    <th>PRICE</th>
+                                    <th>P/L $</th>
+                                    <th>P/L %</th>
+                                    <th>HOLD</th>
+                                    <th>TF</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="st-positions-body"></tbody>
+                        </table>
+                        <div class="st-pos-empty" id="st-pos-empty">No open positions</div>
+                    </div>
+                    <div class="st-pos-panel st-pos-panel--hidden" id="st-pos-panel-orders">
+                        <table class="st-positions-table st-orders-table" id="st-orders-table">
+                            <thead>
+                                <tr>
+                                    <th>TIME</th>
+                                    <th>SYMBOL</th>
+                                    <th>SIDE</th>
+                                    <th>TYPE</th>
+                                    <th>QTY</th>
+                                    <th>STATUS</th>
+                                    <th>FILL $</th>
+                                    <th>SOURCE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="st-orders-body"></tbody>
+                        </table>
+                        <div class="st-pos-empty" id="st-orders-empty">No order history</div>
+                    </div>
+                </div>
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-engine">
+                    <div class="st-engine-panel">
+                        <div class="st-engine-col">
+                            <div class="hud-label">PILLAR SCORES</div>
+                            <div class="st-pillar-row" id="st-pillar-momentum">
+                                <span class="st-pillar-name">MOMENTUM</span>
+                                <span class="st-pillar-score" id="st-pillar-momentum-score">---</span>
+                                <span class="st-pillar-dir" id="st-pillar-momentum-dir">---</span>
+                            </div>
+                        </div>
+                        <div class="st-engine-col">
+                            <div class="hud-label">FSM STATUS + SAFETY</div>
+                            <div class="st-engine-meta">
+                                <span class="hud-label-inline">Phase</span>
+                                <span class="hud-value hud-value--mono st-fsm-phase" id="st-engine-phase">Idle</span>
+                            </div>
+                            <div class="st-engine-meta">
+                                <span class="hud-label-inline">Confirms</span>
+                                <span class="hud-value hud-value--mono" id="st-engine-confirms">0/3</span>
+                            </div>
+                            <div class="st-engine-meta">
+                                <span class="hud-label-inline">Max Hold</span>
+                                <span class="hud-value hud-value--mono" id="st-engine-maxhold">120m</span>
+                            </div>
+                            <div class="st-engine-meta">
+                                <span class="hud-label-inline">Safety</span>
+                                <span class="hud-value hud-value--mono" id="st-engine-safety">---</span>
+                            </div>
+                            <div class="st-safety-list" id="st-safety-list"></div>
+                        </div>
+                    </div>
+                    <div class="st-engine-footer">
+                        <span class="hud-label-inline">Last eval</span>
+                        <span class="hud-value hud-value--mono" id="st-engine-last-eval">---</span>
+                        <span class="hud-label-inline">Evals today</span>
+                        <span class="hud-value hud-value--mono" id="st-engine-evals">0</span>
+                        <span class="hud-label-inline" title="Bars dropped due to channel back-pressure (S04 telemetry, S09 wired)">Bars Drp</span>
+                        <span class="hud-value hud-value--mono" id="st-engine-bars-dropped">0</span>
+                    </div>
+                </div>
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-discovery">
+                    <!-- ── ZONE 1: WALLET BAR — legacy virtual wallets (bot/user sub-accounts).
+                         Hidden 2026-09-18: their P/L is internal transfer accounting, not broker
+                         truth (showed +$158k on a $98k account). Sidebar PORTFOLIO = Alpaca. ── -->
+                    <div class="st-wallet-bar" hidden>
+                        <div class="st-wallet-card" id="st-wallet-card-user">
+                            <div class="st-wallet-card-header">
+                                <span class="hud-label st-wallet-label">USER ACCOUNT</span>
+                                <span class="st-wallet-balance" id="st-wallet-user-bal">$0.00</span>
+                                <span class="st-disc-wallet-pnl" id="st-wallet-user-pnl"></span>
+                            </div>
+                            <div class="st-wallet-tooltip st-wallet-tooltip--hidden" id="st-wallet-user-tooltip">
+                                <div>Total Deposited: <span id="st-wallet-user-tip-dep">$0</span></div>
+                                <div>Total Withdrawn: <span id="st-wallet-user-tip-wth">$0</span></div>
+                                <div>Net P/L: <span id="st-wallet-user-tip-pnl">$0</span></div>
+                            </div>
+                            <div class="st-wallet-card-actions">
+                                <button class="st-wallet-btn st-wallet-btn--topup" id="st-wallet-user-topup-btn">TOPUP</button>
+                                <button class="st-wallet-btn st-wallet-btn--withdraw" id="st-wallet-user-withdraw-btn">WITHDRAW</button>
+                            </div>
+                            <div class="st-wallet-input-row st-wallet-input-row--hidden" id="st-wallet-user-input-row">
+                                <input type="number" class="st-wallet-amount-input" id="st-wallet-user-amount"
+                                       min="0" step="0.01" placeholder="Amount $">
+                                <button class="st-wallet-btn st-wallet-btn--confirm" id="st-wallet-user-confirm">CONFIRM</button>
+                                <button class="st-wallet-btn st-wallet-btn--cancel" id="st-wallet-user-cancel">&#10005;</button>
+                            </div>
+                        </div>
+                        <div class="st-wallet-card" id="st-wallet-card-bot">
+                            <div class="st-wallet-card-header">
+                                <span class="hud-label st-wallet-label">BOT ACCOUNT</span>
+                                <span class="st-wallet-balance" id="st-wallet-bot-bal">$0.00</span>
+                                <span class="st-disc-wallet-pnl" id="st-wallet-bot-pnl"></span>
+                            </div>
+                            <div class="st-wallet-tooltip st-wallet-tooltip--hidden" id="st-wallet-bot-tooltip">
+                                <div>Total Deposited: <span id="st-wallet-bot-tip-dep">$0</span></div>
+                                <div>Total Withdrawn: <span id="st-wallet-bot-tip-wth">$0</span></div>
+                                <div>Net P/L: <span id="st-wallet-bot-tip-pnl">$0</span></div>
+                            </div>
+                            <div class="st-wallet-card-actions">
+                                <button class="st-wallet-btn st-wallet-btn--topup" id="st-wallet-bot-topup-btn">TOPUP</button>
+                                <button class="st-wallet-btn st-wallet-btn--withdraw" id="st-wallet-bot-withdraw-btn">WITHDRAW</button>
+                                <span class="st-wallet-max-asset-wrap">
+                                    <span class="st-wallet-max-label">MAX/ASSET:</span>
+                                    <span class="st-wallet-max-display" id="st-wallet-max-display">$500</span>
+                                    <input type="number" class="st-wallet-max-input st-wallet-input-row--hidden"
+                                           id="st-wallet-max-input" min="100" max="50000" step="50" value="500">
+                                </span>
+                            </div>
+                            <div class="st-wallet-input-row st-wallet-input-row--hidden" id="st-wallet-bot-input-row">
+                                <input type="number" class="st-wallet-amount-input" id="st-wallet-bot-amount"
+                                       min="0" step="0.01" placeholder="Amount $">
+                                <button class="st-wallet-btn st-wallet-btn--confirm" id="st-wallet-bot-confirm">CONFIRM</button>
+                                <button class="st-wallet-btn st-wallet-btn--cancel" id="st-wallet-bot-cancel">&#10005;</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ── ORDER ENTRY PANEL ── -->
+                    <div class="st-order-panel st-order-panel--hidden" id="st-order-panel">
+                        <div class="st-order-header">
+                            <span class="hud-label">MANUAL ORDER</span>
+                            <button class="st-order-close" id="st-order-close" title="Close">&#10005;</button>
+                        </div>
+                        <div class="st-order-body">
+                            <div class="st-order-row st-order-row--symbol">
+                                <label class="st-order-label">Symbol</label>
+                                <input type="text" class="st-order-input st-order-symbol" id="st-order-symbol"
+                                       maxlength="8" spellcheck="false" placeholder="AAPL">
+                                <span class="st-order-label">Price</span>
+                                <span class="st-order-price" id="st-order-price">--</span>
+                            </div>
+                            <div class="st-order-row st-order-row--side">
+                                <button class="st-order-side-btn st-order-side-btn--buy st-order-side-btn--active" id="st-order-buy">BUY</button>
+                                <button class="st-order-side-btn st-order-side-btn--sell" id="st-order-sell">SELL</button>
+                            </div>
+                            <div class="st-order-row st-order-row--type">
+                                <label class="st-order-label">Type</label>
+                                <button class="st-order-type-btn st-order-type-btn--active" id="st-order-type-market">MARKET</button>
+                                <button class="st-order-type-btn" id="st-order-type-limit">LIMIT</button>
+                            </div>
+                            <div class="st-order-row st-order-row--limitprice st-order-row--hidden" id="st-order-limitprice-row">
+                                <label class="st-order-label">Limit Price</label>
+                                <input type="number" class="st-order-input st-order-limitprice" id="st-order-limitprice"
+                                       min="0" step="0.01" placeholder="Price">
+                            </div>
+                            <div class="st-order-row st-order-row--amount">
+                                <label class="st-order-label">Amount</label>
+                                <input type="number" class="st-order-input st-order-amount" id="st-order-amount"
+                                       min="0" step="any" placeholder="500">
+                                <button class="st-order-mode-btn" id="st-order-mode-toggle">USD</button>
+                            </div>
+                            <div class="st-order-row st-order-row--quicksize" id="st-order-quicksize">
+                                <button class="st-order-qsize-btn" data-pct="25">25%</button>
+                                <button class="st-order-qsize-btn" data-pct="50">50%</button>
+                                <button class="st-order-qsize-btn" data-pct="75">75%</button>
+                                <button class="st-order-qsize-btn" data-pct="100">100%</button>
+                            </div>
+                            <div class="st-order-row st-order-row--stoploss">
+                                <label class="st-order-label">Stop Loss</label>
+                                <input type="number" class="st-order-input st-order-stoploss" id="st-order-stoploss"
+                                       min="0" step="0.01" placeholder="Optional">
+                            </div>
+                            <div class="st-order-row st-order-row--takeprofit">
+                                <label class="st-order-label">Take Profit</label>
+                                <input type="number" class="st-order-input st-order-takeprofit" id="st-order-takeprofit"
+                                       min="0" step="0.01" placeholder="Optional">
+                            </div>
+                            <div class="st-order-row st-order-row--wallet">
+                                <label class="st-order-label">From</label>
+                                <button class="st-order-wallet-btn st-order-wallet-btn--active" id="st-order-wallet-user">USER ACCT</button>
+                                <button class="st-order-wallet-btn" id="st-order-wallet-bot">BOT ACCT</button>
+                            </div>
+                            <div class="st-order-estimate" id="st-order-estimate">
+                                <span id="st-order-est-shares">Est. Shares: --</span>
+                                <span class="st-order-est-sep">|</span>
+                                <span id="st-order-est-cost">Est. Cost: --</span>
+                            </div>
+                            <div class="st-order-error st-order-error--hidden" id="st-order-error"></div>
+                            <button class="st-order-submit" id="st-order-submit">SUBMIT ORDER</button>
+                            <div class="st-order-hints">
+                                <span class="st-order-hint">N new</span>
+                                <span class="st-order-hint">B buy</span>
+                                <span class="st-order-hint">S sell</span>
+                                <span class="st-order-hint">L limit</span>
+                                <span class="st-order-hint">Esc close</span>
+                                <span class="st-order-hint">Ctrl+Enter submit</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ── ZONE 2: SCANNER (compact) ── -->
+                    <details class="st-scan-panel st-scan-panel--compact">
+                        <summary class="st-scan-summary">MARKET SCANNER</summary>
+                        <div class="st-scan-body">
+                            <div class="st-scan-quick-row">
+                                <label class="st-scan-label">Price $</label>
+                                <div class="st-scan-control-pair">
+                                    <input type="number" class="st-cfg-input" id="st-scan-price-min"
+                                           min="0" step="0.1" value="1" placeholder="Min">
+                                    <span class="st-scan-dash">–</span>
+                                    <input type="number" class="st-cfg-input" id="st-scan-price-max"
+                                           min="0" step="1" value="500" placeholder="Max">
+                                </div>
+                                <label class="st-scan-label">Vol Min</label>
+                                <input type="number" class="st-cfg-input" id="st-scan-volume-min"
+                                       min="0" step="100000" value="500000">
+                                <span class="st-scan-hint" id="st-scan-vol-hint">500K</span>
+                                <label class="st-scan-label">Chg%</label>
+                                <input type="range" class="st-cfg-slider" id="st-scan-change-min"
+                                       min="0" max="50" step="1" value="1">
+                                <span class="st-cfg-slider-val" id="st-scan-change-val">1%</span>
+                                <select class="st-cfg-select" id="st-scan-score-preset">
+                                    <option value="balanced">Balanced</option>
+                                    <option value="momentum">Momentum</option>
+                                    <option value="volume_hunter">Volume Hunter</option>
+                                    <option value="gap_scanner">Gap Scanner</option>
+                                    <option value="premarket_ignition">Premarket Ignition</option>
+                                </select>
+                                <button class="st-scan-btn st-scan-btn-scan" id="st-scan-btn-scan">SCAN</button>
+                                <button class="st-scan-btn st-scan-btn-clear" id="st-scan-btn-clear">CLEAR</button>
+                            </div>
+                            <details class="st-scan-advanced">
+                                <summary class="st-scan-advanced-toggle">MORE FILTERS</summary>
+                                <div class="st-scan-advanced-body">
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">RVOL Min</label>
+                                        <input type="number" class="st-cfg-input" id="st-scan-rvol-min"
+                                               min="0" step="0.5" value="1">
+                                    </div>
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">Gap %</label>
+                                        <input type="number" class="st-cfg-input" id="st-scan-gap-min"
+                                               min="0" step="0.5" value="0">
+                                    </div>
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">Float Max <span class="st-scan-fmp-badge">FMP</span></label>
+                                        <input type="number" class="st-cfg-input" id="st-scan-float-max"
+                                               min="0" step="1000000" value="0" placeholder="0=off">
+                                    </div>
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">Cap Max <span class="st-scan-fmp-badge">FMP</span></label>
+                                        <input type="number" class="st-cfg-input" id="st-scan-cap-max"
+                                               min="0" step="100000000" value="0" placeholder="0=off">
+                                    </div>
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">Exclude Earnings</label>
+                                        <label class="st-cfg-toggle">
+                                            <input type="checkbox" id="st-scan-exclude-earnings">
+                                            <span class="st-cfg-toggle-track"></span>
+                                        </label>
+                                    </div>
+                                    <div class="st-scan-divider"></div>
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">Max Candidates</label>
+                                        <input type="range" class="st-cfg-slider" id="st-scan-max-candidates"
+                                               min="10" max="300" step="10" value="100">
+                                        <span class="st-cfg-slider-val" id="st-scan-max-cand-val">100</span>
+                                    </div>
+                                    <div class="st-scan-row">
+                                        <label class="st-scan-label">Interval (min)</label>
+                                        <input type="range" class="st-cfg-slider" id="st-scan-interval"
+                                               min="5" max="60" step="5" value="30">
+                                        <span class="st-cfg-slider-val" id="st-scan-interval-val">30m</span>
+                                    </div>
+                                </div>
+                            </details>
+                            <div class="st-scan-btn-group">
+                                <button class="st-scan-btn st-scan-btn-auto" id="st-scan-btn-auto">AUTO SCAN: OFF</button>
+                                <button class="st-scan-btn st-scan-btn-ross" id="st-scan-btn-ross">ROSS CAMERON</button>
+                            </div>
+                            <div class="st-scan-btn-group">
+                                <button class="st-scan-btn st-scan-btn-inject" id="st-scan-btn-inject" title="Apply current scan results to the AutoUniverse watchlist: promote top movers (score &ge; 70, rvol &ge; 1.5), demote stale entries, respect blacklist + protected symbols. Same pipeline as the auto-scan loop, but on demand.">APPLY &#8594; WATCHLIST</button>
+                            </div>
+                            <div class="st-scan-preset-grid">
+                                <button class="st-scan-preset-btn st-scan-preset--penny" data-preset="penny_rockets">Penny Rockets</button>
+                                <button class="st-scan-preset-btn st-scan-preset--swing" data-preset="swing_setup">Swing Setup</button>
+                                <button class="st-scan-preset-btn st-scan-preset--large" data-preset="large_cap">Large Cap</button>
+                                <button class="st-scan-preset-btn st-scan-preset--hot" data-preset="hot_momentum">Hot Momentum</button>
+                                <button class="st-scan-preset-btn st-scan-preset--catalyst" data-preset="catalyst_premarket" title="Premarket gappers with news/earnings catalyst">Catalyst Premarket</button>
+                                <button class="st-scan-preset-btn st-scan-preset--ignition" data-preset="premarket_ignition" title="Names exploding premarket: +8% move, RVOL ≥3, $300k traded, fresh news/earnings ranked first; alerts on every new entrant">Premarket Ignition</button>
+                            </div>
+                            <div class="st-scan-status-row">
+                                <div class="st-scan-status" id="st-scan-status">Ready</div>
+                                <div class="st-scan-session-badge" id="st-scan-session-badge" title="Actionable results must be from today's ET session">SESSION: ---</div>
+                            </div>
+                            <div class="st-scan-progress" id="st-scan-progress">
+                                <div class="st-scan-progress-meta">
+                                    <span class="st-scan-progress-label" id="st-scan-progress-label">Ready to scan</span>
+                                    <span class="st-scan-progress-pct" id="st-scan-progress-pct">0%</span>
+                                </div>
+                                <div class="st-scan-progress-bar">
+                                    <div class="st-scan-progress-fill" id="st-scan-progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                    <!-- ── ZONE 3: ASSETS TABLE ── -->
+                    <div class="st-scan-results-section">
+                        <div class="st-scan-results-header">
+                            <div class="hud-label" id="st-scan-results-label">SCAN RESULTS</div>
+                            <button class="st-scan-btn st-scan-btn-new-order" id="st-scan-btn-new-order" title="New manual order">NEW ORDER</button>
+                            <button class="st-scan-btn st-scan-btn-clear-results" id="st-scan-btn-clear-results" title="Clear results">CLEAR</button>
+                        </div>
+                        <div class="st-scan-results-wrap" id="st-scan-results-wrap">
+                            <table class="st-positions-table st-scan-table" id="st-scan-table">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="symbol">SYMBOL</th>
+                                        <th>CATALYST</th>
+                                        <th data-sort="price">PRICE</th>
+                                        <th data-sort="change_percent">CHG%</th>
+                                        <th data-sort="volume">VOL</th>
+                                        <th data-sort="rvol">RVOL</th>
+                                        <th data-sort="bid">BID</th>
+                                        <th data-sort="ask">ASK</th>
+                                        <th data-sort="spread_bps">SPREAD</th>
+                                        <th data-sort="last_trade_age_seconds">AGE</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="st-scan-tbody"></tbody>
+                            </table>
+                            <div class="st-scan-empty" id="st-scan-empty">Run a scan to see results</div>
+                        </div>
+                    </div>
+                    <!-- ── ZONE 4: WATCHLIST / TOP MOVERS (sub-tabs) ── -->
+                    <div class="st-disc-bottom">
+                        <div class="st-disc-tabs">
+                            <button class="st-disc-tab st-disc-tab--active" data-panel="watchlist">WATCHLIST</button>
+                            <button class="st-disc-tab" data-panel="movers">TOP MOVERS</button>
+                            <div class="st-disc-tab-spacer"></div>
+                            <input type="text" class="st-watchlist-input" id="st-watchlist-input"
+                                   placeholder="SYMBOL" maxlength="8" spellcheck="false">
+                            <button class="st-watchlist-add-btn" id="st-watchlist-add-btn" title="Add to watchlist">+</button>
+                        </div>
+                        <div class="st-disc-panel" id="st-disc-panel-watchlist">
+                            <!-- S18 — AutoUniverse status bar (self-curating watchlist) -->
+                            <div class="st-au-bar" id="st-au-bar">
+                                <label class="st-au-toggle">
+                                    <input type="checkbox" id="st-au-enabled-cb" />
+                                    <span class="st-au-toggle-label">S18 AutoUniverse</span>
+                                </label>
+                                <span class="st-au-stat" title="Pinned (manual)">
+                                    <span class="st-au-stat-icon">PIN</span>
+                                    <span id="st-au-pinned-count">0</span><span class="st-au-stat-cap" id="st-au-pinned-cap">/8</span>
+                                </span>
+                                <span class="st-au-stat" title="Auto-promoted from scanner">
+                                    <span class="st-au-stat-icon st-au-stat-icon--auto">AUTO</span>
+                                    <span id="st-au-auto-count">0</span>
+                                </span>
+                                <button class="st-au-blbtn" id="st-au-blacklist-btn" title="Toggle blacklist panel">
+                                    <span class="st-au-stat-icon st-au-stat-icon--bl">BAN</span>
+                                    <span id="st-au-bl-count">0</span>
+                                </button>
+                                <span class="st-au-status" id="st-au-status">disabled</span>
+                            </div>
+                            <div class="st-au-blacklist st-au-blacklist--hidden" id="st-au-blacklist">
+                                <div class="st-au-bl-header">
+                                    <span>Blacklist (cool-down)</span>
+                                    <button class="st-au-bl-clear" id="st-au-bl-clear-all" title="Clear all blacklist entries">CLEAR ALL</button>
+                                </div>
+                                <div class="st-au-bl-list" id="st-au-bl-list"></div>
+                            </div>
+                            <div class="st-watchlist-wrap st-watchlist-wrap--full">
+                                <table class="st-positions-table st-wl-table" id="st-wl-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>SYMBOL</th>
+                                            <th>CATALYST</th>
+                                            <th>PRICE</th>
+                                            <th>CHG%</th>
+                                            <th>VOL</th>
+                                            <th>RVOL</th>
+                                            <th>GAP%</th>
+                                            <th>BID</th>
+                                            <th>ASK</th>
+                                            <th>SPREAD</th>
+                                            <th>AGE</th>
+                                            <th>SCORE</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="st-wl-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="st-disc-panel st-disc-panel--hidden" id="st-disc-panel-movers">
+                            <div class="st-movers-grid" id="st-movers-list"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-journal">
+                    <div class="st-jrn-stats-row">
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Trades</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-trades">0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Win%</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-winrate">0.0%</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Avg W</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-avg-win">$0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Avg L</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-avg-loss">$0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">PF</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-pf">0.00</span>
+                        </span>
+                        <span class="st-jrn-stat" title="Sum of realized P/L on closed trades only (matches the 'PNL' column in older builds). Does NOT include unrealized on still-open positions.">
+                            <span class="hud-label-inline">Realized</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-total-pnl">$0</span>
+                        </span>
+                        <span class="st-jrn-stat" title="Mark-to-market on all open positions right now. Adds to Realized for the equity change picture, but is not yet locked in.">
+                            <span class="hud-label-inline">Unreal</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-unrealized">$0</span>
+                        </span>
+                        <span class="st-jrn-stat" title="Equity change vs. start of day. THIS IS WHAT ALPACA SHOWS as 'Daily Change' — the authoritative figure for real money. Differs from Realized when positions are still open or were carried overnight.">
+                            <span class="hud-label-inline">Daily Δ</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-daily-change">$0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">MaxDD</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-maxdd">$0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Best</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-best">$0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Worst</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-worst">$0</span>
+                        </span>
+                        <span class="st-jrn-stat">
+                            <span class="hud-label-inline">Streak</span>
+                            <span class="hud-value hud-value--mono" id="st-jrn-streak">—</span>
+                        </span>
+                    </div>
+                    <div class="st-jrn-equity-row">
+                        <div class="st-jrn-equity-wrap">
+                            <div class="hud-label">EQUITY CURVE</div>
+                            <div id="st-equity-chart" class="st-equity-chart"></div>
+                        </div>
+                        <div class="st-jrn-daily-wrap">
+                            <div class="hud-label">DAILY P/L (7d)</div>
+                            <div id="st-jrn-daily" class="st-jrn-daily"></div>
+                        </div>
+                    </div>
+                    <div class="st-jrn-filter-row">
+                        <select class="st-jrn-filter" id="st-jrn-filter-symbol">
+                            <option value="all">All Symbols</option>
+                        </select>
+                        <select class="st-jrn-filter" id="st-jrn-filter-period">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                        </select>
+                        <select class="st-jrn-filter" id="st-jrn-filter-pnl">
+                            <option value="all">All Trades</option>
+                            <option value="winners">Winners</option>
+                            <option value="losers">Losers</option>
+                        </select>
+                        <button class="st-jrn-export-btn" id="st-jrn-export" title="Export CSV">CSV ↓</button>
+                    </div>
+                    <table class="st-positions-table st-jrn-table" id="st-jrn-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="symbol">SYM</th>
+                                <th>SIDE</th>
+                                <th>ENTRY</th>
+                                <th>EXIT</th>
+                                <th>QTY</th>
+                                <th data-sort="pnl">P/L $</th>
+                                <th>P/L %</th>
+                                <th data-sort="hold">HOLD</th>
+                                <th>REASON</th>
+                                <th data-sort="playbook">PLAYBOOK</th>
+                                <th data-sort="conviction">CONV</th>
+                                <th data-sort="score">SCORE</th>
+                                <th data-sort="entry_time">DATE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="st-jrn-body"></tbody>
+                    </table>
+                    <div class="st-pos-empty" id="st-jrn-empty">No trades recorded</div>
+                </div>
+
+                <!-- ── D Evolution Protocol — Tournament Leaderboard ── -->
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-tournament">
+                    <div class="st-tour-summary">
+                        <div class="st-tour-stat">
+                            <span class="hud-label-inline">Paper Capital</span>
+                            <span class="hud-value hud-value--mono" id="st-tour-capital">$0</span>
+                        </div>
+                        <div class="st-tour-stat">
+                            <span class="hud-label-inline">Free Pool</span>
+                            <span class="hud-value hud-value--mono" id="st-tour-pool">$0</span>
+                        </div>
+                        <div class="st-tour-stat">
+                            <span class="hud-label-inline">Last Saved</span>
+                            <span class="hud-value hud-value--mono" id="st-tour-saved">—</span>
+                        </div>
+                        <div class="st-tour-stat" title="Market regime classified from SPY 5-min bars">
+                            <span class="hud-label-inline">Regime</span>
+                            <span class="hud-value hud-value--mono st-regime-badge" id="st-tour-regime" data-regime="unknown">—</span>
+                        </div>
+                        <button class="st-tour-refresh" id="st-tour-refresh-btn" title="Re-fetch tournament state">REFRESH</button>
+                    </div>
+                    <table class="st-pos-table st-tour-table">
+                        <thead>
+                            <tr>
+                                <th>STRATEGY</th>
+                                <th>STATUS</th>
+                                <th class="num">TRADES</th>
+                                <th class="num">WR%</th>
+                                <th class="num">EXP</th>
+                                <th class="num">P/L</th>
+                                <th class="num">DD%</th>
+                                <th class="num">WALLET</th>
+                                <th class="num">STREAK</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="st-tour-body"></tbody>
+                    </table>
+                    <div class="st-pos-empty" id="st-tour-empty">Tournament state unavailable</div>
+                </div>
+
+                <!-- ── D-PLUS (Sesiunea 2) — Adaptive Risk + Memory DB + Lead-Lag + Evolver ── -->
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-dplus">
+                    <div class="dplus-grid">
+                        <!-- Sub-panel 1: Adaptive Risk -->
+                        <section class="dplus-panel" id="dplus-panel-risk">
+                            <header class="dplus-panel-header">
+                                <span class="dplus-panel-title">ADAPTIVE RISK</span>
+                                <button class="dplus-refresh-btn" data-refresh="risk" title="Reload">⟳</button>
+                            </header>
+                            <table class="st-pos-table dplus-table" id="dplus-risk-table">
+                                <thead>
+                                    <tr>
+                                        <th>STRATEGY</th>
+                                        <th class="num">SIZE×</th>
+                                        <th class="num">L</th>
+                                        <th class="num">W</th>
+                                        <th class="num">COOLDN</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dplus-risk-body"></tbody>
+                            </table>
+                            <div class="dplus-empty" id="dplus-risk-empty">D-PLUS disabled or no data yet</div>
+                        </section>
+
+                        <!-- Sub-panel 2: Memory DB -->
+                        <section class="dplus-panel" id="dplus-panel-memory">
+                            <header class="dplus-panel-header">
+                                <span class="dplus-panel-title">MARKET MEMORY DB</span>
+                                <button class="dplus-refresh-btn" data-refresh="memory" title="Reload">⟳</button>
+                            </header>
+                            <div class="dplus-stats" id="dplus-memory-stats">
+                                <div class="dplus-stat"><span class="hud-label-inline">TOTAL SETUPS</span><span class="hud-value hud-value--mono" id="dplus-mem-total">—</span></div>
+                                <div class="dplus-stat"><span class="hud-label-inline">CLOSED</span><span class="hud-value hud-value--mono" id="dplus-mem-closed">—</span></div>
+                                <div class="dplus-stat"><span class="hud-label-inline">POSTERIORS</span><span class="hud-value hud-value--mono" id="dplus-mem-posteriors">—</span></div>
+                                <div class="dplus-stat"><span class="hud-label-inline">SCHEMA</span><span class="hud-value hud-value--mono" id="dplus-mem-schema">—</span></div>
+                                <div class="dplus-stat"><span class="hud-label-inline">LAST WRITE</span><span class="hud-value hud-value--mono" id="dplus-mem-last">—</span></div>
+                            </div>
+                        </section>
+
+                        <!-- Sub-panel 3: Causal Lead-Lag -->
+                        <section class="dplus-panel" id="dplus-panel-causal">
+                            <header class="dplus-panel-header">
+                                <span class="dplus-panel-title">LEAD-LAG MATRIX</span>
+                                <button class="dplus-refresh-btn" data-refresh="causal" title="Force recompute">⟳</button>
+                            </header>
+                            <table class="st-pos-table dplus-table" id="dplus-causal-table">
+                                <thead>
+                                    <tr>
+                                        <th>LEADER</th>
+                                        <th>LAGGER</th>
+                                        <th class="num">LAG (S)</th>
+                                        <th class="num">CORR</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dplus-causal-body"></tbody>
+                            </table>
+                            <div class="dplus-empty" id="dplus-causal-empty">No lead-lag edges detected yet</div>
+                        </section>
+
+                        <!-- Sub-panel 4: Evolver Proposals + Overrides -->
+                        <section class="dplus-panel" id="dplus-panel-evolver">
+                            <header class="dplus-panel-header">
+                                <span class="dplus-panel-title">STRATEGY EVOLVER</span>
+                                <button class="dplus-refresh-btn" data-refresh="evolver" title="Reload">⟳</button>
+                            </header>
+                            <div class="dplus-evolver-overrides" id="dplus-evolver-overrides"></div>
+                            <table class="st-pos-table dplus-table" id="dplus-evolver-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>PARENTS</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dplus-evolver-body"></tbody>
+                            </table>
+                            <div class="dplus-empty" id="dplus-evolver-empty">No proposals yet — evolver runs nightly at 20:00 ET</div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- ── OMEGA (Sesiunea 3) — Predictive ML stack ── -->
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-omega">
+                    <div class="omega-grid">
+                        <!-- Sub-panel 1: Model status -->
+                        <section class="omega-panel" id="omega-panel-models">
+                            <header class="omega-panel-header">
+                                <span class="omega-panel-title">MODEL STATUS</span>
+                                <button class="omega-refresh-btn" data-refresh="models" title="Reload">⟳</button>
+                            </header>
+                            <table class="st-pos-table omega-table" id="omega-models-table">
+                                <thead>
+                                    <tr>
+                                        <th>MODEL</th>
+                                        <th>ARCH</th>
+                                        <th class="num">VER</th>
+                                        <th class="num">ACC</th>
+                                        <th class="num">SAMPLES</th>
+                                        <th>STATE</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="omega-models-body"></tbody>
+                            </table>
+                            <div class="omega-empty" id="omega-models-empty">OMEGA disabled or registry empty</div>
+                        </section>
+
+                        <!-- Sub-panel 2: Live predictions -->
+                        <section class="omega-panel" id="omega-panel-predictions">
+                            <header class="omega-panel-header">
+                                <span class="omega-panel-title">LIVE PREDICTIONS</span>
+                                <button class="omega-refresh-btn" data-refresh="predictions" title="Reload">⟳</button>
+                            </header>
+                            <table class="st-pos-table omega-table" id="omega-pred-table">
+                                <thead>
+                                    <tr>
+                                        <th>SYMBOL</th>
+                                        <th>MODEL</th>
+                                        <th class="num">DIR</th>
+                                        <th>CONFIDENCE</th>
+                                        <th class="num">AGE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="omega-pred-body"></tbody>
+                            </table>
+                            <div class="omega-empty" id="omega-pred-empty">No predictions yet — models cold-start</div>
+                        </section>
+
+                        <!-- Sub-panel 3: Regime forecast -->
+                        <section class="omega-panel" id="omega-panel-regime">
+                            <header class="omega-panel-header">
+                                <span class="omega-panel-title">REGIME FORECAST</span>
+                                <button class="omega-refresh-btn" data-refresh="regime" title="Reload">⟳</button>
+                            </header>
+                            <div class="omega-regime-bars" id="omega-regime-bars"></div>
+                            <div class="omega-stat" id="omega-regime-meta">
+                                <span class="hud-label-inline">HORIZON</span>
+                                <span class="hud-value hud-value--mono" id="omega-regime-horizon">90 min</span>
+                            </div>
+                        </section>
+
+                        <!-- Sub-panel 4: Re-train controls -->
+                        <section class="omega-panel" id="omega-panel-train">
+                            <header class="omega-panel-header">
+                                <span class="omega-panel-title">RE-TRAIN CONTROLS</span>
+                                <button class="omega-refresh-btn" data-refresh="train" title="Reload">⟳</button>
+                            </header>
+                            <div class="omega-train-actions" id="omega-train-actions"></div>
+                            <div class="omega-train-log" id="omega-train-log"></div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- ── PRIME — conviction engine console ── -->
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-prime">
+                    <div class="st-prime-grid">
+                        <section class="st-prime-panel st-prime-panel--wide">
+                            <h3 class="st-prime-title">CONVICTION HEAT-LINE <span class="st-prime-sub">last 24h — every arbitrated decision</span></h3>
+                            <div class="st-prime-heat" id="st-prime-heat"></div>
+                            <div class="st-prime-empty" id="st-prime-heat-empty">No decisions recorded yet</div>
+                        </section>
+                        <section class="st-prime-panel">
+                            <h3 class="st-prime-title">VETO LEDGER <span class="st-prime-sub">24h — why entries were refused</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>STAGE</th><th>REASON</th><th>COUNT</th></tr></thead>
+                                <tbody id="st-prime-veto-body"></tbody>
+                            </table>
+                            <div class="st-prime-empty" id="st-prime-veto-empty">No vetoes in window</div>
+                        </section>
+                        <section class="st-prime-panel">
+                            <h3 class="st-prime-title">SHADOW BOOK <span class="st-prime-sub">what the vetoed trades would have done (R-multiples)</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>STAGE</th><th>PLAYBOOK</th><th>N</th><th>WINS</th><th>TOTAL R</th></tr></thead>
+                                <tbody id="st-prime-shadow-body"></tbody>
+                            </table>
+                            <div class="st-prime-empty" id="st-prime-shadow-empty">No resolved shadows yet</div>
+                        </section>
+                        <section class="st-prime-panel">
+                            <h3 class="st-prime-title">FRONTIER <span class="st-prime-sub">mode / go-live gate (PF≥1.2, ≥30 closes) / condition kill-rate 24h</span></h3>
+                            <div class="st-prime-frontier-status" id="st-prime-frontier-status"></div>
+                            <div class="st-frontier-days" id="st-frontier-days"></div>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>SETUP</th><th>CONDITION</th><th>N</th><th>KILLS</th><th>KILL %</th></tr></thead>
+                                <tbody id="st-prime-frontier-body"></tbody>
+                            </table>
+                            <div class="st-prime-empty" id="st-prime-frontier-empty">No Frontier condition data yet</div>
+                            <h3 class="st-prime-title st-frontier-cal-title">CALIBRATION <span class="st-prime-sub">engine proposes from shadow evidence — operator applies</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>THRESHOLD</th><th>CURRENT</th><th>SUGGESTED</th><th>EVIDENCE</th></tr></thead>
+                                <tbody id="st-frontier-cal-body"></tbody>
+                            </table>
+                            <div class="st-prime-empty" id="st-frontier-cal-empty">No calibration data yet</div>
+                            <div class="st-prime-lab-actions">
+                                <button class="st-prime-apply-btn" id="st-frontier-cal-apply">APPLY PROPOSED THRESHOLDS</button>
+                            </div>
+                        </section>
+                        <section class="st-prime-panel">
+                            <h3 class="st-prime-title">HOSPITAL <span class="st-prime-sub">quarantined playbooks + daily symbol bans</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>PLAYBOOK</th><th>SINCE</th><th>REL@ADMIT</th></tr></thead>
+                                <tbody id="st-prime-hosp-body"></tbody>
+                            </table>
+                            <div class="st-prime-hosp-symbols" id="st-prime-hosp-symbols"></div>
+                            <div class="st-prime-empty" id="st-prime-hosp-empty">All playbooks active — no symbol bans today</div>
+                        </section>
+                        <section class="st-prime-panel">
+                            <h3 class="st-prime-title">WEIGHTS LAB <span class="st-prime-sub">nightly counterfactual grid search — operator applies</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>COMPONENT</th><th>CURRENT</th><th>SUGGESTED</th></tr></thead>
+                                <tbody id="st-prime-lab-body"></tbody>
+                            </table>
+                            <div class="st-prime-lab-evidence" id="st-prime-lab-evidence"></div>
+                            <div class="st-prime-lab-actions">
+                                <button class="st-prime-apply-btn" id="st-prime-lab-apply">APPLY SUGGESTED WEIGHTS</button>
+                            </div>
+                            <div class="st-prime-empty" id="st-prime-lab-empty">No suggestion pending — lab runs nightly at 21:30 ET</div>
+                        </section>
+                        <section class="st-prime-panel">
+                            <h3 class="st-prime-title">SLIPPAGE <span class="st-prime-sub">decision price vs fill price (bps, adverse = gold)</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>SYMBOL</th><th>FILLS</th><th>AVG BPS</th><th>WORST</th></tr></thead>
+                                <tbody id="st-prime-slip-body"></tbody>
+                            </table>
+                            <div class="st-prime-empty" id="st-prime-slip-empty">No fills measured yet this session</div>
+                        </section>
+                        <section class="st-prime-panel st-prime-panel--wide">
+                            <h3 class="st-prime-title">DEBRIEF <span class="st-prime-sub">today, assembled from journal + decisions + shadows</span></h3>
+                            <div class="st-prime-debrief" id="st-prime-debrief"></div>
+                            <div class="st-prime-empty" id="st-prime-debrief-empty">No activity yet today</div>
+                        </section>
+                        <section class="st-prime-panel st-prime-panel--wide">
+                            <h3 class="st-prime-title">DECISION FEED <span class="st-prime-sub">newest first</span></h3>
+                            <table class="st-positions-table st-prime-table">
+                                <thead><tr><th>TIME</th><th>SYM</th><th>PLAYBOOK</th><th>DIR</th><th>SCORE</th><th>CONV</th><th>OUTCOME</th><th>DETAIL</th></tr></thead>
+                                <tbody id="st-prime-dec-body"></tbody>
+                            </table>
+                            <div class="st-prime-empty" id="st-prime-dec-empty">No decisions recorded yet</div>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="st-tab-content" id="st-tab-meridian">
+                    <div class="st-mrd-grid">
+                        <section class="st-mrd-panel st-mrd-panel--wide">
+                            <h3 class="st-mrd-title">MERIDIAN A+B <span class="st-mrd-sub" id="st-mrd-mode">SHADOW</span></h3>
+                            <p class="st-mrd-text">Two independent rules on SPY and QQQ. <b>A</b> — the noise envelope: from the last 14 sessions we know how far price normally wanders from the open by each minute; at every :00 / :30 close, above the upper band = LONG, below the lower band = SHORT, stop trails the VWAP, always flat at 15:59. <b>B</b> — the overnight carry: at 15:59, if the day closes in the lower part of its range (IBS low) and price is above its 200-day average, buy and sell at the 09:30 open. Size is volatility-targeted (2 %/day for A, 0.6 %/night for B) on the configured capital.</p>
+                            <div class="st-mrd-equity" id="st-mrd-equity">—</div>
+                        </section>
+                        <section class="st-mrd-panel st-mrd-panel--wide">
+                            <h3 class="st-mrd-title">NOW <span class="st-mrd-sub">rule inputs at the latest 1-min bar</span></h3>
+                            <table class="st-positions-table st-mrd-table">
+                                <thead><tr><th>SYMBOL</th><th>LAST</th><th>UPPER BAND</th><th>LOWER BAND</th><th>VWAP</th><th>RULE A</th><th>RULE B</th><th>σ DAILY</th></tr></thead>
+                                <tbody id="st-mrd-symbols"></tbody>
+                            </table>
+                        </section>
+                        <section class="st-mrd-panel">
+                            <h3 class="st-mrd-title">TODAY'S SCHEDULE <span class="st-mrd-sub">ET</span></h3>
+                            <table class="st-positions-table st-mrd-table"><tbody id="st-mrd-schedule"></tbody></table>
+                        </section>
+                        <section class="st-mrd-panel st-mrd-panel--wide">
+                            <h3 class="st-mrd-title">ORDERS <span class="st-mrd-sub">last reconciliation vs. broker — Day = market now · Cls = at the close · Opg = at the open</span></h3>
+                            <table class="st-positions-table st-mrd-table">
+                                <thead><tr><th>SYMBOL</th><th>ACTION</th><th>WHEN</th><th>ID</th></tr></thead>
+                                <tbody id="st-mrd-orders"></tbody>
+                            </table>
+                            <div class="st-mrd-dim" id="st-mrd-applied"></div>
+                        </section>
+                        <section class="st-mrd-panel">
+                            <h3 class="st-mrd-title">DECISIONS TODAY <span class="st-mrd-sub">what fired and why</span></h3>
+                            <table class="st-positions-table st-mrd-table">
+                                <thead><tr><th>TIME</th><th>SYMBOL</th><th>ACTION</th><th>PRICE</th><th>NET</th><th>RULE</th></tr></thead>
+                                <tbody id="st-mrd-intents"></tbody>
+                            </table>
+                        </section>
+                    </div>
+                </div>
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-lab">
+                    <div class="st-bte-panel">
+                        <header class="st-bte-header">
+                            <span class="st-bte-title">STRATEGY LAB</span>
+                            <span class="st-bte-subtitle">Parallel multi-strategy backtest on Alpaca SIP bars</span>
+                        </header>
+                        <div class="st-bte-form">
+                            <label class="st-bte-field">
+                                <span class="st-bte-field-label">SYMBOLS (comma-separated)</span>
+                                <input type="text" class="st-bte-input" id="st-bte-symbols"
+                                       placeholder="AAPL,MSFT,NVDA,TSLA,SPY">
+                            </label>
+                            <label class="st-bte-field">
+                                <span class="st-bte-field-label">TIMEFRAME</span>
+                                <select class="st-bte-input" id="st-bte-tf">
+                                    <option value="1m">1m</option>
+                                    <option value="5m" selected>5m</option>
+                                    <option value="10m">10m</option>
+                                    <option value="15m">15m</option>
+                                    <option value="30m">30m</option>
+                                    <option value="1h">1h</option>
+                                    <option value="4h">4h</option>
+                                    <option value="1d">1d</option>
+                                    <option value="all">ALL</option>
+                                </select>
+                            </label>
+                            <label class="st-bte-field">
+                                <span class="st-bte-field-label">START (UTC)</span>
+                                <input type="date" class="st-bte-input" id="st-bte-start">
+                            </label>
+                            <label class="st-bte-field">
+                                <span class="st-bte-field-label">END (UTC)</span>
+                                <input type="date" class="st-bte-input" id="st-bte-end">
+                            </label>
+                            <label class="st-bte-field">
+                                <span class="st-bte-field-label">INITIAL EQUITY ($)</span>
+                                <input type="number" class="st-bte-input" id="st-bte-equity"
+                                       value="10000" min="100" step="100">
+                            </label>
+                            <label class="st-bte-field">
+                                <span class="st-bte-field-label">SLIPPAGE (bps)</span>
+                                <input type="number" class="st-bte-input" id="st-bte-slippage"
+                                       value="5" min="0" max="100" step="1">
+                            </label>
+                        </div>
+                        <div class="st-bte-strategies" id="st-bte-strategies"></div>
+                        <div class="st-bte-actions">
+                            <button class="st-bte-run-btn" id="st-bte-run">RUN BACKTEST</button>
+                            <span class="st-bte-status" id="st-bte-status"></span>
+                        </div>
+                        <div class="st-bte-disclaimer" id="st-bte-disclaimer"></div>
+                        <section class="st-bte-results" id="st-bte-results">
+                            <header class="st-bte-section-header">
+                                <span class="st-bte-section-title">PER-STRATEGY LEADERBOARD</span>
+                            </header>
+                            <div class="st-bte-table-wrap">
+                                <table class="st-bte-table" id="st-bte-strategy-table">
+                                    <thead>
+                                        <tr>
+                                            <th>STRATEGY</th>
+                                            <th>TF</th>
+                                            <th>TRADES</th>
+                                            <th>WIN%</th>
+                                            <th>PF</th>
+                                            <th>EXPECT</th>
+                                            <th>NET $</th>
+                                            <th>MAX DD%</th>
+                                            <th>SHARPE</th>
+                                            <th>SORTINO</th>
+                                            <th>CAGR%</th>
+                                            <th>EXPOS%</th>
+                                            <th>SYMS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="st-bte-strategy-tbody"></tbody>
+                                </table>
+                            </div>
+                            <header class="st-bte-section-header">
+                                <span class="st-bte-section-title">PER-(STRATEGY, SYMBOL) DETAIL</span>
+                            </header>
+                            <div class="st-bte-table-wrap">
+                                <table class="st-bte-table" id="st-bte-symbol-table">
+                                    <thead>
+                                        <tr>
+                                            <th>STRATEGY</th>
+                                            <th>TF</th>
+                                            <th>SYMBOL</th>
+                                            <th>TRADES</th>
+                                            <th>WIN%</th>
+                                            <th>PF</th>
+                                            <th>NET $</th>
+                                            <th>MAX DD%</th>
+                                            <th>SHARPE</th>
+                                            <th>FINAL $</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="st-bte-symbol-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div class="st-bte-equity" id="st-bte-equity-wrap"></div>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="st-tab-content st-tab-content--hidden" id="st-tab-config">
+                    <div class="st-cfg-panel">
+                        <!-- SMARTTREND SECTION -->
+                        <div class="st-cfg-section" data-section="smarttrend">
+                            <div class="st-cfg-section-header" data-toggle="smarttrend">
+                                <span class="st-cfg-section-arrow">&#9662;</span>
+                                <span class="st-cfg-section-title">SMARTTREND</span>
+                            </div>
+                            <div class="st-cfg-section-body" id="st-cfg-body-smarttrend">
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Exit Confirm Bars</label>
+                                    <div class="st-cfg-control">
+                                        <input type="number" class="st-cfg-input" id="st-cfg-exit-confirm-bars"
+                                               min="1" max="20" step="1" value="2">
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Risk per Trade</label>
+                                    <div class="st-cfg-control">
+                                        <input type="range" class="st-cfg-slider" id="st-cfg-risk-per-trade"
+                                               min="0.001" max="0.10" step="0.001" value="0.01">
+                                        <span class="st-cfg-slider-val" id="st-cfg-risk-per-trade-val">1.0%</span>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Max Drawdown %</label>
+                                    <div class="st-cfg-control">
+                                        <input type="range" class="st-cfg-slider" id="st-cfg-max-drawdown"
+                                               min="1" max="50" step="0.5" value="5">
+                                        <span class="st-cfg-slider-val" id="st-cfg-max-drawdown-val">5.0%</span>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Max Hold (min)</label>
+                                    <div class="st-cfg-control">
+                                        <input type="number" class="st-cfg-input" id="st-cfg-max-hold"
+                                               min="5" max="1440" step="5" value="120">
+                                        <span class="st-cfg-hint" id="st-cfg-max-hold-hint">2h 0m</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- EXECUTION SECTION -->
+                        <div class="st-cfg-section" data-section="execution">
+                            <div class="st-cfg-section-header" data-toggle="execution">
+                                <span class="st-cfg-section-arrow">&#9662;</span>
+                                <span class="st-cfg-section-title">EXECUTION</span>
+                            </div>
+                            <div class="st-cfg-section-body" id="st-cfg-body-execution">
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Max Positions</label>
+                                    <div class="st-cfg-control">
+                                        <input type="number" class="st-cfg-input" id="st-cfg-max-positions"
+                                               min="1" max="50" step="1" value="5">
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Allow Short</label>
+                                    <div class="st-cfg-control">
+                                        <label class="st-cfg-toggle">
+                                            <input type="checkbox" id="st-cfg-allow-short">
+                                            <span class="st-cfg-toggle-track"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Bracket ATR Mult</label>
+                                    <div class="st-cfg-control">
+                                        <input type="range" class="st-cfg-slider" id="st-cfg-bracket-atr"
+                                               min="0.5" max="5" step="0.1" value="2.0">
+                                        <span class="st-cfg-slider-val" id="st-cfg-bracket-atr-val">2.0x</span>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Order Timeout (s)</label>
+                                    <div class="st-cfg-control">
+                                        <input type="number" class="st-cfg-input" id="st-cfg-order-timeout"
+                                               min="5" max="120" step="5" value="30">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- UI SECTION -->
+                        <div class="st-cfg-section" data-section="ui">
+                            <div class="st-cfg-section-header" data-toggle="ui">
+                                <span class="st-cfg-section-arrow">&#9662;</span>
+                                <span class="st-cfg-section-title">UI</span>
+                            </div>
+                            <div class="st-cfg-section-body" id="st-cfg-body-ui">
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Active Symbol</label>
+                                    <div class="st-cfg-control">
+                                        <input type="text" class="st-cfg-input"
+                                               id="st-cfg-active-symbol" value="AAPL">
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Default Timeframe</label>
+                                    <div class="st-cfg-control">
+                                        <select class="st-cfg-select" id="st-cfg-default-tf">
+                                            <option value="1m">1m</option>
+                                            <option value="5m" selected>5m</option>
+                                            <option value="10m">10m</option>
+                                            <option value="15m">15m</option>
+                                            <option value="30m">30m</option>
+                                            <option value="1h">1h</option>
+                                            <option value="4h">4h</option>
+                                            <option value="1D">1D</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Show Volume</label>
+                                    <div class="st-cfg-control">
+                                        <label class="st-cfg-toggle">
+                                            <input type="checkbox" id="st-cfg-show-volume" checked>
+                                            <span class="st-cfg-toggle-track"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Desktop Notifications</label>
+                                    <div class="st-cfg-control">
+                                        <label class="st-cfg-toggle">
+                                            <input type="checkbox" id="st-cfg-desktop-notif" checked>
+                                            <span class="st-cfg-toggle-track"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Sound on Fill</label>
+                                    <div class="st-cfg-control">
+                                        <label class="st-cfg-toggle">
+                                            <input type="checkbox" id="st-cfg-sound-fill" checked>
+                                            <span class="st-cfg-toggle-track"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- MARKET SECTION -->
+                        <div class="st-cfg-section" data-section="market">
+                            <div class="st-cfg-section-header" data-toggle="market">
+                                <span class="st-cfg-section-arrow">&#9662;</span>
+                                <span class="st-cfg-section-title">MARKET / BROKER</span>
+                            </div>
+                            <div class="st-cfg-section-body" id="st-cfg-body-market">
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Alpaca Key ID <span class="st-cfg-restart-badge">restart</span></label>
+                                    <div class="st-cfg-control">
+                                        <input type="password" class="st-cfg-input st-cfg-secret" id="st-cfg-alpaca-key"
+                                               placeholder="PKXXXX..." spellcheck="false" autocomplete="off">
+                                        <button class="st-cfg-eye-btn" data-reveal="st-cfg-alpaca-key" title="Show/Hide">&#128065;</button>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Alpaca Secret <span class="st-cfg-restart-badge">restart</span></label>
+                                    <div class="st-cfg-control">
+                                        <input type="password" class="st-cfg-input st-cfg-secret" id="st-cfg-alpaca-secret"
+                                               placeholder="Secret..." spellcheck="false" autocomplete="off">
+                                        <button class="st-cfg-eye-btn" data-reveal="st-cfg-alpaca-secret" title="Show/Hide">&#128065;</button>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row" id="st-cfg-paper-row" data-mode-state="paper">
+                                    <label class="st-cfg-label">Trading Mode <span class="st-cfg-restart-badge">restart</span></label>
+                                    <div class="st-cfg-control">
+                                        <div class="st-cfg-mode-selector" role="group" aria-label="Trading mode">
+                                            <button type="button" class="st-cfg-mode-btn st-cfg-mode-btn--paper" id="st-cfg-mode-paper-btn" aria-pressed="true">PAPER</button>
+                                            <button type="button" class="st-cfg-mode-btn st-cfg-mode-btn--live" id="st-cfg-mode-live-btn" aria-pressed="false">LIVE</button>
+                                        </div>
+                                        <input type="checkbox" id="st-cfg-paper-mode" checked hidden>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row st-cfg-row--hint">
+                                    <span class="st-cfg-mode-hint" id="st-cfg-mode-hint">PAPER: Alpaca paper API · virtual money · safe for testing</span>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">SIP Feed <span class="st-cfg-restart-badge">restart</span></label>
+                                    <div class="st-cfg-control">
+                                        <label class="st-cfg-toggle">
+                                            <input type="checkbox" id="st-cfg-sip-feed" checked>
+                                            <span class="st-cfg-toggle-track"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Discovery Poll (s)</label>
+                                    <div class="st-cfg-control">
+                                        <input type="number" class="st-cfg-input" id="st-cfg-discovery-poll"
+                                               min="10" max="600" step="10" value="60">
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">Stale Data (s)</label>
+                                    <div class="st-cfg-control">
+                                        <input type="number" class="st-cfg-input" id="st-cfg-stale-data"
+                                               min="5" max="120" step="5" value="30">
+                                    </div>
+                                </div>
+                                <div class="st-cfg-row">
+                                    <label class="st-cfg-label">FMP API Key</label>
+                                    <div class="st-cfg-control">
+                                        <input type="password" class="st-cfg-input st-cfg-secret" id="st-cfg-fmp-key"
+                                               placeholder="FMP key..." spellcheck="false" autocomplete="off">
+                                        <button class="st-cfg-eye-btn" data-reveal="st-cfg-fmp-key" title="Show/Hide">&#128065;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ACTIONS -->
+                        <div class="st-cfg-actions">
+                            <button class="st-cfg-btn st-cfg-btn--save" id="st-cfg-save" disabled>SAVE</button>
+                            <button class="st-cfg-btn st-cfg-btn--reset" id="st-cfg-reset">RESET DEFAULTS</button>
+                            <button class="st-cfg-btn st-cfg-btn--cancel" id="st-cfg-cancel" disabled>CANCEL</button>
+                            <span class="st-cfg-io-group">
+                                <button class="st-cfg-btn st-cfg-btn--io" id="st-cfg-export" title="Export config JSON">EXPORT</button>
+                                <button class="st-cfg-btn st-cfg-btn--io" id="st-cfg-import" title="Import config JSON">IMPORT</button>
+                            </span>
+                            <span class="st-cfg-dirty-indicator" id="st-cfg-dirty"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </main>
+
+        <div class="st-alloc-modal st-alloc-modal--hidden" id="st-alloc-modal">
+            <div class="st-alloc-content">
+                <div class="hud-label">ALLOCATE TO BOT WALLET</div>
+                <p class="st-alloc-msg">Bot wallet is empty. Allocate funds to start auto-trading.</p>
+                <div class="st-alloc-info">
+                    <span class="st-alloc-label">User Balance:</span>
+                    <span class="st-alloc-value" id="st-alloc-user-bal">$0.00</span>
+                </div>
+                <div class="st-alloc-buttons">
+                    <button class="st-alloc-btn" data-alloc-pct="25">25%</button>
+                    <button class="st-alloc-btn" data-alloc-pct="50">50%</button>
+                    <button class="st-alloc-btn" data-alloc-pct="75">75%</button>
+                    <button class="st-alloc-btn" data-alloc-pct="100">100%</button>
+                </div>
+                <button class="st-alloc-skip" id="st-alloc-skip">SKIP</button>
+            </div>
+        </div>
+
+        <div class="st-news-modal st-news-modal--hidden" id="st-news-modal" role="dialog" aria-modal="true">
+            <div class="st-news-modal-content">
+                <div class="st-news-modal-header">
+                    <div class="hud-label" id="st-news-modal-title">CATALYST NEWS</div>
+                    <button type="button" class="st-news-modal-close" id="st-news-modal-close" title="Close">&times;</button>
+                </div>
+                <div class="st-news-modal-body" id="st-news-modal-body"></div>
+                <div class="st-news-modal-empty st-news-modal-empty--hidden" id="st-news-modal-empty">No recent news</div>
+            </div>
+        </div>
+
+        <footer class="hud-footer">
+            <div class="hud-footer-cell">
+                <span class="hud-label">BUILD</span>
+                <span class="hud-value hud-value--mono" id="st-version">---</span>
+            </div>
+            <div class="hud-footer-cell">
+                <span class="hud-label">HASH</span>
+                <span class="hud-value hud-value--mono" id="st-hash">---</span>
+            </div>
+            <div class="hud-footer-cell">
+                <span class="hud-label">DATE</span>
+                <span class="hud-value hud-value--mono" id="st-date">---</span>
+            </div>
+            <div class="hud-footer-cell">
+                <span class="hud-label">SESSION</span>
+                <span class="hud-value hud-value--mono" id="st-session">---</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="lightweight-charts.js"></script>
+    <script type="module" src="modules/core.js"></script>
+</body>
+</html>

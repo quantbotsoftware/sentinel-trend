@@ -1,0 +1,27 @@
+[package]
+name = "titan-meridian"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "MERIDIAN — pure strategy engine, simulator and validation statistics (no I/O runtime)"
+
+[lib]
+name = "titan_meridian"
+path = "src/lib.rs"
+
+[[bin]]
+name = "meridian"
+path = "src/bin/meridian/main.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+flate2 = "1"
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+proptest = "1"
