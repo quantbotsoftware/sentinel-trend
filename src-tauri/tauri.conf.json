@@ -1,0 +1,64 @@
+{
+    "build": {
+        "beforeDevCommand": "",
+        "beforeBuildCommand": "",
+        "devPath": "../src",
+        "distDir": "../src",
+        "withGlobalTauri": true
+    },
+    "package": {
+        "productName": "sentinel-trend",
+        "version": "1.0.0"
+    },
+    "tauri": {
+        "allowlist": {
+            "all": false,
+            "notification": {
+                "all": true
+            },
+            "window": {
+                "all": false
+            },
+            "shell": {
+                "all": false,
+                "open": false
+            }
+        },
+        "bundle": {
+            "active": true,
+            "targets": "all",
+            "identifier": "com.sentineltrend.app",
+            "icon": [
+                "icons/icon.png"
+            ],
+            "windows": {
+                "certificateThumbprint": null,
+                "digestAlgorithm": "sha256",
+                "timestampUrl": "http://timestamp.digicert.com",
+                "tsp": false,
+                "wix": null
+            },
+            "macOS": {
+                "frameworks": null,
+                "minimumSystemVersion": "10.15",
+                "exceptionDomain": null,
+                "signingIdentity": null,
+                "providerShortName": null,
+                "entitlements": null
+            }
+        },
+        "security": {
+            "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://paper-api.alpaca.markets https://api.alpaca.markets https://data.alpaca.markets wss://stream.data.alpaca.markets wss://paper-api.alpaca.markets wss://api.alpaca.markets https://financialmodelingprep.com; img-src 'self' data: blob:; font-src 'self' data:;"
+        },
+        "windows": [
+            {
+                "fullscreen": false,
+                "resizable": true,
+                "maximized": true,
+                "title": "SentinelTrend",
+                "width": 1600,
+                "height": 1200
+            }
+        ]
+    }
+}

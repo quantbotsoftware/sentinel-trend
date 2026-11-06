@@ -1,0 +1,104 @@
+[workspace]
+resolver = "2"
+members = [
+    ".",
+    "crates/titan-types",
+    "crates/titan-risk",
+    "crates/titan-indicators",
+    "crates/titan-meridian",
+    "crates/titan-frontier",
+]
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+
+[package]
+name = "sentinel-trend"
+version = "1.0.0"
+description = "SentinelTrend — SmartTrend Trading System"
+authors = ["Tony"]
+edition = "2021"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }
+
+[dependencies]
+titan-types = { path = "crates/titan-types" }
+titan-risk = { path = "crates/titan-risk" }
+titan-indicators = { path = "crates/titan-indicators" }
+titan-meridian = { path = "crates/titan-meridian" }
+tauri = { version = "1", features = ["custom-protocol", "notification-all", "devtools", "test"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "time"] }
+tracing-appender = "0.2"
+tokio = { version = "1", features = ["full", "rt-multi-thread"] }
+tokio-util = "0.7"
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+thiserror = "2"
+toml = "0.8"
+ordered-float = "4"
+reqwest = { version = "0.11", features = ["json", "rustls-tls", "gzip"], default-features = false }
+tokio-tungstenite = { version = "0.20", features = ["rustls-tls-webpki-roots"] }
+url = "2"
+futures-util = "0.3"
+rust_decimal = { version = "1", features = ["serde-with-str", "serde-with-float"] }
+rust_decimal_macros = "1"
+uuid = { version = "1", features = ["v4"] }
+sha2 = "0.10"
+arc-swap = "1"
+# Strategy Lab backtest engine — parallel per-(strategy,symbol)
+# simulations across the historical bar set.
+rayon = "1"
+# Gzip-compressed candle cache for the backtest engine; keeps the
+# Alpaca round-trip count low across iterative parameter tuning.
+flate2 = "1"
+# D-PLUS (Sesiunea 2) — Market Memory DB. Bundled SQLite avoids any
+# system libsqlite3 dependency on deploy targets.
+rusqlite = { version = "0.31", features = ["bundled"] }
+# OMEGA (Sesiunea 3) — Rust-only ML stack. CPU build by default;
+# `cuda` / `metal` features can be flipped manually if hardware
+# accelerators become available. `safetensors` for portable
+# weight serialisation.
+candle-core = { version = "0.10", default-features = false }
+candle-nn = { version = "0.10", default-features = false }
+safetensors = "0.4"
+
+[features]
+default = ["tournament"]
+custom-protocol = ["tauri/custom-protocol"]
+tournament = []
+# OMEGA: opt-in GPU acceleration. Enable with
+# `cargo build --release --features cuda` (requires CUDA toolkit
+# >= 12.8 for Blackwell sm_120 / RTX 50 series). Inference path
+# stays CPU even with this feature on (predictable latency in
+# trading hours); training auto-detects via Device::cuda_if_available.
+cuda = ["candle-core/cuda", "candle-nn/cuda"]
+metal = ["candle-core/metal", "candle-nn/metal"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+opt-level = 3
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+proptest = "1"
+# S15.5: enable tokio paused-time helpers (`tokio::time::advance`,
+# `#[tokio::test(start_paused = true)]`) for unit tests of slow loops
+# (e.g. `chunked_tick_sleep` in `market::alpaca_news`). Production
+# builds don't pull in `test-util` so binary size is unaffected.
+tokio = { version = "1", features = ["test-util"] }

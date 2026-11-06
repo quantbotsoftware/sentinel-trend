@@ -1,0 +1,47 @@
+[package]
+name = "titan-frontier"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "MERIDIAN frontier research — Sleeve T daily ETF trend simulator, A+B+T combination gate, BOCPD report. Pure, no I/O runtime; outside the live strategy hash."
+
+[lib]
+name = "titan_frontier"
+path = "src/lib.rs"
+
+[[bin]]
+name = "frontier"
+path = "src/bin/frontier/main.rs"
+
+[[bin]]
+name = "lab"
+path = "src/bin/lab/main.rs"
+
+[[bin]]
+name = "hurst_lab"
+path = "src/bin/hurst_lab/main.rs"
+
+[[bin]]
+name = "vix_lab"
+path = "src/bin/vix_lab/main.rs"
+
+[[bin]]
+name = "astra_lab"
+path = "src/bin/astra_lab/main.rs"
+
+[[bin]]
+name = "r5_lab"
+path = "src/bin/r5_lab/main.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }
+# stats (Sharpe, DSR) and spc::Bocpd are reused from the pure engine crate;
+# nothing in that crate is modified.
+titan-meridian = { path = "../titan-meridian" }
+# Hurst (DFA-1) estimator for the pre-registered entry gate (hurst_gate).
+titan-indicators = { path = "../titan-indicators" }
+
+[lints]
+workspace = true
