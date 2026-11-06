@@ -2,6 +2,9 @@
 
 > Provided strictly **AS-IS** under the MIT License, with zero warranty and zero support obligations.
 
+## v1.0.7 (2026-11-06)
+- Transparency release: real paper-trading track record (SentinelTrend journal, every trade as CSV; Titan honest status), GitHub Actions CI on all 4 repos (549 + 1,740 Rust tests, 81 CPU-side Rust Core tests with nvcc-compiled CUDA kernels, QL649 public pytest subset), git history preserved from now on, .v3bin format spec (Vault as a dataset) with measured Gate A0 GPU/CPU parity, Titan tests isolated from real data dir, Sentinel Cargo.lock shipped
+
 ## v1.0.6 (2026-11-06)
 - Added bilingual (EN/RO) user manuals for Quantum Lab 649 and Rust Core v3 (inside the archives + online); FAQ section; shell scripts executable; QL649 README wording
 

@@ -1,5 +1,7 @@
 # SentinelTrend — Algorithmic Trading Desktop App (Rust + Tauri + Alpaca)
 
+[![CI](https://github.com/quantbotsoftware/sentinel-trend/actions/workflows/ci.yml/badge.svg)](https://github.com/quantbotsoftware/sentinel-trend/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23992530.svg)](https://doi.org/10.5281/zenodo.23992530) [![Hub](https://img.shields.io/badge/hub-bot--tradingsoftware.com-0a7)](https://bot-tradingsoftware.com/)
+
 ![License: MIT](https://img.shields.io/badge/license-MIT-10b981) ![Price: Free](https://img.shields.io/badge/price-free-3b82f6) [![Donations: Good Samaritans](https://img.shields.io/badge/donations-good%20samaritans-ec4899)](https://ko-fi.com/quantbotsoftware)
 
 A production-grade desktop trading application for US equities, built on
@@ -147,3 +149,20 @@ SentinelTrend is released **free of charge** under the [MIT License](LICENSE). I
 > **Additional Documentation:** Extended Romanian architecture & strategy manuals may be shared upon polite request if available, strictly AS-IS and without support.
 >
 > **Third-Party Notices:** `src/lightweight-charts.js` is TradingView Lightweight Charts™ (Apache-2.0) — see [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt) and [LICENSES/NOTICE-lightweight-charts.txt](LICENSES/NOTICE-lightweight-charts.txt).
+
+
+## ✅ Continuous Integration
+
+Every push to `main` runs **`cargo test --workspace --locked` — 1,740 unit + integration tests** (strategy engine & FSM, adversarial execution cases, order flow, P&L decimal parity, snapshots, daily reset, concurrent-lock integration, `titan_frontier` crate) on Ubuntu 24.04 with the Tauri v2 toolchain, plus ES-module syntax validation of all 51 frontend modules.
+
+Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · runs: [https://github.com/quantbotsoftware/sentinel-trend/actions](https://github.com/quantbotsoftware/sentinel-trend/actions). No secrets, no broker or network calls, no telemetry — fork it and the same checks run for you.
+
+
+## 📊 Paper-Trading Track Record (real numbers, losses included)
+
+Real, unedited results of this bot on an Alpaca **paper** account, 2026-05-26 → 2026-10-29: **118 closed trades, net -2,046.69 USD, win rate 35.6%, profit factor 0.71, max drawdown -4,177.82 USD.** Yes, that is a loss — it is published in full, with every trade in [`sentinel_paper_trades.csv`](sentinel_paper_trades.csv), because the alternative (hiding it) is how this industry usually works.
+
+- 🇬🇧 [SENTINEL_PAPER_TRACK_RECORD.md](SENTINEL_PAPER_TRACK_RECORD.md) · 🇷🇴 [SENTINEL_PAPER_TRACK_RECORD_RO.md](SENTINEL_PAPER_TRACK_RECORD_RO.md)
+- Online: [https://bot-tradingsoftware.com/#track-record](https://bot-tradingsoftware.com/#track-record)
+
+> Paper trading ≠ live trading. Simulated fills are optimistic. Nothing here is financial advice or a performance claim.
