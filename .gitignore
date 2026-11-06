@@ -1,0 +1,55 @@
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Node / Frontend
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tauri build artifacts
+src-tauri/target/
+src-tauri/WixTools/
+src-tauri/icons/*.ico
+
+# App data (generated at runtime)
+snapshots/
+journal/
+.hardening_logs/
+
+# Python tooling caches & local artifacts
+__pycache__/
+*.pyc
+tools/cache/
+tools/results/
+
+# Local notes (not for commit)
+prompt ptr claude
+.archive/
+
+# Contains plaintext Alpaca credentials — never commit
+CONTINUITY_2026-05-18.md
+
+# Scratch / debug helpers (local only)
+src-tauri/scratch/
+auto_bootstrap.py

@@ -1,0 +1,12 @@
+{
+  "app": "sentinel-trend",
+  "name": "SentinelTrend",
+  "version": "1.0.5",
+  "suite_version": "1.0.5",
+  "released_at": "2026-11-06",
+  "license": "MIT",
+  "as_is_no_warranty": true,
+  "hub_url": "https://bot-tradingsoftware.com",
+  "versions_manifest_url": "https://bot-tradingsoftware.com/versions.json",
+  "donate_url": "https://ko-fi.com/quantbotsoftware"
+}
