@@ -1,0 +1,4 @@
+# wry 0.24 / webkit2gtk 0.18 (Tauri v1) do not compile on rustc >= 1.99.
+# 1.93.0 is the toolchain this release was built and tested with (CI uses the same).
+[toolchain]
+channel = "1.93.0"

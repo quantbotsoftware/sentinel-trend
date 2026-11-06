@@ -128,7 +128,7 @@ the framework and are not represented as profitable.
 
 ## 🖼️ UI Reference Screenshots (Compiled Desktop Confirmation)
 
-> *Illustrative engineering confirmation only (virtual PAPER mode) — showing the compiled Rust + Tauri v2 desktop HUD; not financial advice or a performance claim.*
+> *Illustrative engineering confirmation only (virtual PAPER mode) — showing the compiled Rust + Tauri v1 desktop HUD; not financial advice or a performance claim.*
 
 - 🌐 **Full Interactive UI Gallery:** [https://bot-tradingsoftware.com/#screenshots](https://bot-tradingsoftware.com/#screenshots)
 
@@ -153,7 +153,7 @@ SentinelTrend is released **free of charge** under the [MIT License](LICENSE). I
 
 ## ✅ Continuous Integration
 
-Every push to `main` runs **`cargo test --workspace --locked` — 1,740 unit + integration tests** (strategy engine & FSM, adversarial execution cases, order flow, P&L decimal parity, snapshots, daily reset, concurrent-lock integration, `titan_frontier` crate) on Ubuntu 24.04 with the Tauri v2 toolchain, plus ES-module syntax validation of all 51 frontend modules.
+Every push to `main` runs **`cargo test --workspace --locked` — 1,740 unit + integration tests** (strategy engine & FSM, adversarial execution cases, order flow, P&L decimal parity, snapshots, daily reset, concurrent-lock integration, `titan_frontier` crate) on Ubuntu 22.04 with the Tauri v1 toolchain (Rust pinned to 1.93.0 — see `rust-toolchain.toml`), plus ES-module syntax validation of all 51 frontend modules.
 
 Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · runs: [https://github.com/quantbotsoftware/sentinel-trend/actions](https://github.com/quantbotsoftware/sentinel-trend/actions). No secrets, no broker or network calls, no telemetry — fork it and the same checks run for you.
 

@@ -41,20 +41,22 @@ jobs:
           [ "$fail" -eq 0 ]
 
   rust:
-    name: Rust build & tests (Tauri v2, Ubuntu 24.04)
-    runs-on: ubuntu-24.04
+    name: Rust build & tests (Tauri v1, Ubuntu 22.04)
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # Pinned: wry 0.24 / webkit2gtk 0.18 (Tauri v1) do not compile on rustc >= 1.99; 1.93.0 is the verified toolchain
+      # (also enforced for local builds by rust-toolchain.toml in the repo root).
+      - uses: dtolnay/rust-toolchain@1.93.0
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-      - name: Install Tauri v2 system dependencies
+      - name: Install Tauri v1 system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+            libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev \
             libssl-dev pkg-config patchelf
       - name: cargo test --workspace --locked
         working-directory: src-tauri
