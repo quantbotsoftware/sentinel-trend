@@ -5,7 +5,7 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-10b981) ![Price: Free](https://img.shields.io/badge/price-free-3b82f6) [![Donations: Good Samaritans](https://img.shields.io/badge/donations-good%20samaritans-ec4899)](https://ko-fi.com/quantbotsoftware)
 
 A production-grade desktop trading application for US equities, built on
-**Tauri 2 (Rust backend + JavaScript frontend)** with full
+**Tauri 1.x (Rust backend + JavaScript frontend)** with full
 **Alpaca** brokerage integration. ~67,000 lines of code.
 
 > **What this is:** a well-architected, batteries-included **trading engine
@@ -43,7 +43,7 @@ A production-grade desktop trading application for US equities, built on
 ## Architecture
 
 ```
-Frontend (ES Modules)            Backend (Rust / Tauri 2)
+Frontend (ES Modules)            Backend (Rust / Tauri 1.x)
 ─────────────────────            ────────────────────────
 index.html                       main.rs ............ app setup, async loops
 modules/                         state.rs ........... ordered mutexes
@@ -68,7 +68,7 @@ styles/hud.css .... HUD theme    risk/ .............. breaker, equity sync
 ## Build
 
 **Prerequisites:** Rust 1.75+, Node not required (vanilla JS frontend),
-Tauri 2 system dependencies (e.g. `webkit2gtk`, `libsoup` on Linux).
+Tauri 1.x system dependencies (e.g. `webkit2gtk`, `libsoup` on Linux).
 
 ```bash
 # Development build

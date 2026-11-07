@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=SentinelTrend (Open Source)
-Comment=Algorithmic Trading Engine & Multi-Strategy Desktop App (Rust + Tauri v2, AS-IS)
+Comment=Algorithmic Trading Engine & Multi-Strategy Desktop App (Rust + Tauri v1, AS-IS)
 Exec=@REPO_DIR@/src-tauri/target/release/sentinel-trend
 Path=@REPO_DIR@
 Terminal=false
